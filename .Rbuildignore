@@ -1,0 +1,7 @@
+^\.github$
+^data-raw$
+^CHECKLIST\.md$
+^cran-comments\.md$
+^\.Rproj\.user$
+^.*\.Rproj$
+^LICENSE\.md$
