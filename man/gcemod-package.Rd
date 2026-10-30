@@ -18,19 +18,22 @@ interest relative to the hazard for the competing event. Per-subject
 \eqn{\omega = \omega^{+} / (1 + \omega^{+})} is retained as a descriptive
 quantity (the fraction of hazard attributable to the event of interest) for
 comparison of model-predicted with observed values; covariate effects are
-modelled on \eqn{\omega^{+}} only.
+modeled on \eqn{\omega^{+}} only.
 
 Confidence intervals and p-values come from the Lunn-McNeil (1995)
 stacked/augmented data construction: a single model on subject records
 duplicated by event type and stratified by event type, whose
-covariate-by-event-type interaction estimates \eqn{\log(\omega^{+}\text{
-ratio})}. See \code{\link{lunnmcneil}}.
+covariate-by-event-type interaction estimates the log ratio of
+\eqn{\omega^{+}}. See \code{\link{lunnmcneil}}.
 }
 \section{Key functions}{
 
 \describe{
   \item{\code{\link{gcecox}}}{GCE model via cause-specific Cox regression.}
   \item{\code{\link{gcefg}}}{GCE model via Fine-Gray regression.}
+  \item{\code{\link{gcecif}}}{GCE model on the cumulative-incidence scale:
+    covariate effects on the ratio \eqn{\rho(t) = F_1(t)/F_2(t)} by
+    pseudo-observation regression.}
   \item{\code{\link{lunnmcneil}}}{Stacked-model estimator and tests.}
   \item{\code{\link{gce_cutpoints}}}{Risk-score cutpoints maximizing omega+ separation.}
   \item{\code{\link{gce_alligator}}}{Cumulative incidence by risk group.}
@@ -38,7 +41,8 @@ ratio})}. See \code{\link{lunnmcneil}}.
   \item{\code{\link{gce_performance}}}{Cause-specific concordance (C-index).}
   \item{\code{\link{gce_scaling}}}{Covariate means/SDs behind the risk score.}
   \item{\code{\link{gce_riskscore}}}{Score new subjects vs. the average patient.}
-  \item{\code{\link{gce_tidy}}}{Tidy coefficient tables.}
+  \item{\code{\link{gce_tidy}}}{Tidy coefficient tables, including the
+    primary/competing/total/relative effects comparison (\code{effects = TRUE}).}
 }
 }
 
@@ -73,6 +77,11 @@ secondary analysis of a phase 3 randomised trial.
 Authors:
 \itemize{
   \item Loren Mell \email{lmell@ucsd.edu}
+}
+
+Other contributors:
+\itemize{
+  \item Morten Overgaard \email{moov@ph.au.dk} (proposed the stacked pseudo-observation estimator used by gcecif()) [contributor]
 }
 
 }

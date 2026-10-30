@@ -15,8 +15,11 @@ gce_cutpoints(
 )
 }
 \arguments{
-\item{object}{a \code{"gcemod"} object from \code{\link{gcecox}} or
-\code{\link{gcefg}}.}
+\item{object}{a \code{"gcemod"} object from \code{\link{gcecox}},
+\code{\link{gcefg}}, or \code{\link{gcecif}}. For a \code{\link{gcecif}} fit
+the per-group summary reports mean \eqn{\rho} and share instead of
+\eqn{\omega^{+}} / \eqn{\omega}; the \code{"omegaplus"} criterion still means
+separation on the risk-score (linear-predictor) scale.}
 
 \item{groups}{number of groups (default \code{2}).}
 
@@ -64,11 +67,13 @@ The alternative \code{"cif"} maximizes a joint Gray's test statistic (summed
 across both competing events) on the observed cumulative incidence.
 }
 \examples{
-\donttest{
 data(hn)
 Ind <- data.frame(event = as.integer(hn$status == 1),
                   competing = as.integer(hn$status == 2))
 fit <- gcecox(hn$time, Ind, hn[, c("age", "t_cat", "p16")], M = 5, t = 5)
+gce_cutpoints(fit, groups = 2)
+\donttest{
+# with a selection-adjusted permutation p-value (slower)
 gce_cutpoints(fit, groups = 2, nperm = 200)
 }
 }

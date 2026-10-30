@@ -105,6 +105,32 @@
   f(times)
 }
 
+#' Aalen-Johansen cumulative incidence of both causes at a landmark time
+#'
+#' Returns \code{c(F1, F2)}, the cumulative incidence of the event of interest
+#' (cause 1) and the competing event (cause 2) at time \code{t}, from the
+#' Aalen-Johansen estimator (product-limit all-cause survivor times the
+#' cause-specific increments). Used for the observed cumulative-incidence ratio
+#' in \code{\link{gce_calibration}} of a \code{\link{gcecif}} fit.
+#'
+#' @param time numeric follow-up times.
+#' @param cause integer cause coding (0 censored, 1 event of interest, 2 competing).
+#' @param t landmark time.
+#' @return numeric length-2 vector \code{c(F1, F2)}.
+#' @keywords internal
+#' @noRd
+.aj_cif_at <- function(time, cause, t) {
+  ut <- sort(unique(time[cause > 0 & time <= t]))
+  if (length(ut) < 1L) return(c(NA_real_, NA_real_))
+  Y  <- vapply(ut, function(u) sum(time >= u), numeric(1))
+  d1 <- vapply(ut, function(u) sum(time == u & cause == 1L), numeric(1))
+  d2 <- vapply(ut, function(u) sum(time == u & cause == 2L), numeric(1))
+  haz   <- ifelse(Y > 0, (d1 + d2) / Y, 0)
+  Sprev <- c(1, cumprod(1 - haz)[-length(haz)])
+  c(sum(Sprev * ifelse(Y > 0, d1 / Y, 0)),
+    sum(Sprev * ifelse(Y > 0, d2 / Y, 0)))
+}
+
 #' Format a numeric p-value for printing
 #' @keywords internal
 #' @noRd

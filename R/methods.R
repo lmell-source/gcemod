@@ -17,7 +17,7 @@ print.gcemod <- function(x, ...) {
 #' @export
 summary.gcemod <- function(object, ...) {
   cat(sprintf("Generalized competing event model [%s]\n", object$method))
-  cat(sprintf("Call: %s\n", paste(deparse(object$call), collapse = " ")))
+  cat("Call: ", paste(deparse(object$call), collapse = "\n"), "\n", sep = "")
   cat(sprintf("  n = %d;  events of interest = %d;  competing events = %d;  t = %g\n",
               object$n, object$n_event, object$n_competing, object$t))
   cat("\n--- omega+ ratio (event of interest vs. competing event) ---\n")
@@ -25,6 +25,43 @@ summary.gcemod <- function(object, ...) {
   if (!is.null(object$omnibus) && !is.na(object$omnibus["statistic"])) {
     cat(sprintf(
       "\nLunn-McNeil omnibus test: chi-sq = %.3f, df = %d, p = %s\n",
+      object$omnibus["statistic"], as.integer(object$omnibus["df"]),
+      .fmt_p(object$omnibus["p.value"])))
+  }
+  invisible(list(result = object$result, omnibus = object$omnibus))
+}
+
+#' @export
+print.gcecif <- function(x, ...) {
+  cat(sprintf("Generalized competing event model [%s]\n", x$method))
+  cat(sprintf("  n = %d;  events of interest = %d;  competing events = %d;  t = %g\n",
+              x$n, x$n_event, x$n_competing, x$t))
+  cat(sprintf("  F1(t) = %.4f;  F2(t) = %.4f;  baseline rho = F1/F2 = %.4f\n",
+              x$F1, x$F2, x$rho0))
+  cat("\nrho ratios (odds the realized event is the event of interest):\n")
+  print(as.data.frame(x$result))
+  if (!is.null(x$omnibus) && !is.na(x$omnibus["statistic"])) {
+    cat(sprintf(
+      "\nOmnibus Wald test (all rho ratios = 1): chi-sq = %.3f, df = %d, p = %s\n",
+      x$omnibus["statistic"], as.integer(x$omnibus["df"]),
+      .fmt_p(x$omnibus["p.value"])))
+  }
+  invisible(x)
+}
+
+#' @export
+summary.gcecif <- function(object, ...) {
+  cat(sprintf("Generalized competing event model [%s]\n", object$method))
+  cat("Call: ", paste(deparse(object$call), collapse = "\n"), "\n", sep = "")
+  cat(sprintf("  n = %d;  events of interest = %d;  competing events = %d;  t = %g\n",
+              object$n, object$n_event, object$n_competing, object$t))
+  cat(sprintf("  F1(t) = %.4f;  F2(t) = %.4f;  baseline rho = F1/F2 = %.4f\n",
+              object$F1, object$F2, object$rho0))
+  cat("\n--- rho ratio (cumulative incidence of event of interest vs. competing) ---\n")
+  print(as.data.frame(object$result))
+  if (!is.null(object$omnibus) && !is.na(object$omnibus["statistic"])) {
+    cat(sprintf(
+      "\nOmnibus Wald test (all rho ratios = 1): chi-sq = %.3f, df = %d, p = %s\n",
       object$omnibus["statistic"], as.integer(object$omnibus["df"]),
       .fmt_p(object$omnibus["p.value"])))
   }
@@ -49,8 +86,10 @@ summary.gcemod <- function(object, ...) {
 #' cause-specific hazards coincide and a Cox model on the composite endpoint is
 #' used in both cases.
 #'
-#' @param object a \code{"gcemod"} object from \code{\link{gcecox}} or
-#'   \code{\link{gcefg}}.
+#' @param object a \code{"gcemod"} object from \code{\link{gcecox}},
+#'   \code{\link{gcefg}}, or \code{\link{gcecif}}. For a \code{\link{gcecif}} fit
+#'   the \code{relative} column is the cumulative-incidence ratio (rho ratio) and
+#'   the primary/competing/total columns are cause-specific hazard ratios.
 #' @param effects logical; if \code{TRUE}, return the primary/competing/total/
 #'   relative effects comparison table instead of the omega+ ratio table.
 #'   Requires an object fit with \pkg{gcemod} >= 0.3.0 (which stores the design
@@ -62,14 +101,12 @@ summary.gcemod <- function(object, ...) {
 #'   \code{term}, \code{primary}, \code{competing}, \code{total}, and
 #'   \code{relative}, each a formatted "HR (low, high)" string.
 #' @examples
-#' \donttest{
 #' data(hn)
 #' Ind <- data.frame(event = as.integer(hn$status == 1),
 #'                   competing = as.integer(hn$status == 2))
 #' fit <- gcecox(hn$time, Ind, hn[, c("age", "t_cat", "p16")], M = 5, t = 5)
 #' gce_tidy(fit)
 #' gce_tidy(fit, effects = TRUE)
-#' }
 #' @export
 gce_tidy <- function(object, effects = FALSE, ...) {
   if (!inherits(object, "gcemod")) stop("'object' must be a gcemod object.", call. = FALSE)

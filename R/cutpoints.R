@@ -108,8 +108,11 @@
 #' The alternative \code{"cif"} maximizes a joint Gray's test statistic (summed
 #' across both competing events) on the observed cumulative incidence.
 #'
-#' @param object a \code{"gcemod"} object from \code{\link{gcecox}} or
-#'   \code{\link{gcefg}}.
+#' @param object a \code{"gcemod"} object from \code{\link{gcecox}},
+#'   \code{\link{gcefg}}, or \code{\link{gcecif}}. For a \code{\link{gcecif}} fit
+#'   the per-group summary reports mean \eqn{\rho} and share instead of
+#'   \eqn{\omega^{+}} / \eqn{\omega}; the \code{"omegaplus"} criterion still means
+#'   separation on the risk-score (linear-predictor) scale.
 #' @param groups number of groups (default \code{2}).
 #' @param method \code{"optimal"} (default) or \code{"quantile"}.
 #' @param criterion optimal-search criterion: \code{"omegaplus"} (default,
@@ -134,11 +137,13 @@
 #'   \code{nperm > 0}.
 #'
 #' @examples
-#' \donttest{
 #' data(hn)
 #' Ind <- data.frame(event = as.integer(hn$status == 1),
 #'                   competing = as.integer(hn$status == 2))
 #' fit <- gcecox(hn$time, Ind, hn[, c("age", "t_cat", "p16")], M = 5, t = 5)
+#' gce_cutpoints(fit, groups = 2)
+#' \donttest{
+#' # with a selection-adjusted permutation p-value (slower)
 #' gce_cutpoints(fit, groups = 2, nperm = 200)
 #' }
 #' @export
@@ -186,14 +191,22 @@ gce_cutpoints <- function(object, groups = 2,
 
   ev <- as.integer(cause == 1)
   cm <- as.integer(cause == 2)
+  is_cif <- inherits(object, "gcecif")
   summ <- do.call(rbind, lapply(levels(grp), function(g) {
     sel <- grp == g
-    data.frame(group = g, n = sum(sel),
-               events_of_interest = sum(ev[sel]),
-               competing_events   = sum(cm[sel]),
-               mean_omegaplus = mean(object$omegaplus[sel], na.rm = TRUE),
-               mean_omega     = mean(object$omega[sel], na.rm = TRUE),
-               stringsAsFactors = FALSE)
+    base <- data.frame(group = g, n = sum(sel),
+                       events_of_interest = sum(ev[sel]),
+                       competing_events   = sum(cm[sel]),
+                       stringsAsFactors = FALSE)
+    if (is_cif) {
+      rho <- object$rho
+      base$mean_rho   <- mean(rho[sel], na.rm = TRUE)
+      base$mean_share <- mean((rho / (1 + rho))[sel], na.rm = TRUE)
+    } else {
+      base$mean_omegaplus <- mean(object$omegaplus[sel], na.rm = TRUE)
+      base$mean_omega     <- mean(object$omega[sel], na.rm = TRUE)
+    }
+    base
   }))
   rownames(summ) <- NULL
 

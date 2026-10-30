@@ -7,18 +7,17 @@
 #' for new subjects (see \code{\link{gce_riskscore}}) and to interpret how far a
 #' subject sits from the average patient.
 #'
-#' @param object a \code{"gcemod"} object from \code{\link{gcecox}} or
-#'   \code{\link{gcefg}}.
+#' @param object a \code{"gcemod"} object from \code{\link{gcecox}},
+#'   \code{\link{gcefg}}, or \code{\link{gcecif}}.
 #' @return A data frame with columns \code{term}, \code{mean}, \code{sd},
-#'   \code{coef_perSD} (log-omega+ ratio per 1 SD) and
-#'   \code{omegaplus_ratio_perSD}.
+#'   \code{coef_perSD} (log ratio per 1 SD) and the per-SD ratio
+#'   (\code{omegaplus_ratio_perSD} for omega+ models,
+#'   \code{rho_ratio_perSD} for a \code{\link{gcecif}} fit).
 #' @examples
-#' \donttest{
 #' data(prostate)
 #' Ind <- data.frame(as.integer(prostate$status == 1), as.integer(prostate$status == 2))
 #' fit <- gcecox(prostate$time, Ind, prostate[, c("age", "psa", "gleason")], M = 5, t = 10)
 #' gce_scaling(fit)
-#' }
 #' @seealso \code{\link{gce_riskscore}}
 #' @export
 gce_scaling <- function(object) {
@@ -37,20 +36,20 @@ gce_scaling <- function(object) {
 #' (\code{\link{gcecox}}) models the absolute predicted omega+ and omega at the
 #' model's time \code{t} are also returned.
 #'
-#' @param object a \code{"gcemod"} object.
+#' @param object a \code{"gcemod"} object from \code{\link{gcecox}},
+#'   \code{\link{gcefg}}, or \code{\link{gcecif}}.
 #' @param newdata a data frame containing the covariates used to fit
 #'   \code{object} (same column names). Factor levels not seen in the fitting
 #'   data are treated as the reference level.
-#' @return A data frame with \code{riskscore}, \code{omegaplus_rel}
-#'   (= \code{exp(riskscore)}), and, for cause-specific models, \code{omegaplus}
-#'   and \code{omega} (absolute, at time \code{t}).
+#' @return A data frame with \code{riskscore} and \code{exp(riskscore)} relative
+#'   to the average subject: \code{omegaplus_rel} for omega+ models (with
+#'   absolute \code{omegaplus} and \code{omega} at time \code{t} for
+#'   cause-specific fits), or \code{rho_rel} for a \code{\link{gcecif}} fit.
 #' @examples
-#' \donttest{
 #' data(prostate)
 #' Ind <- data.frame(as.integer(prostate$status == 1), as.integer(prostate$status == 2))
 #' fit <- gcecox(prostate$time, Ind, prostate[, c("age", "psa", "gleason")], M = 5, t = 10)
 #' gce_riskscore(fit, newdata = prostate[1:5, ])
-#' }
 #' @seealso \code{\link{gce_scaling}}
 #' @export
 gce_riskscore <- function(object, newdata) {
@@ -62,7 +61,9 @@ gce_riskscore <- function(object, newdata) {
                                  paste(miss, collapse = ", ")), call. = FALSE)
 
   # Build the design matrix on newdata and align to the fitted design columns.
-  Xf <- stats::model.matrix(stats::reformulate(covn), data = newdata)
+  # Subset to the covariates first, then '~ .', so non-syntactic column names
+  # (and extra columns in newdata) are handled.
+  Xf <- stats::model.matrix(~ ., data = newdata[, covn, drop = FALSE])
   Xf <- Xf[, colnames(Xf) != "(Intercept)", drop = FALSE]
   cn <- object$covnames
   Xnew <- matrix(0, nrow = nrow(Xf), ncol = length(cn), dimnames = list(NULL, cn))
@@ -78,5 +79,9 @@ gce_riskscore <- function(object, newdata) {
     out$omegaplus <- op
     out$omega <- op / (1 + op)
   }
+  ## gcecif() works on the cumulative-incidence ratio: relabel exp(riskscore) as
+  ## rho relative to the average subject (no absolute omega+ at time t).
+  if (inherits(object, "gcecif"))
+    names(out)[names(out) == "omegaplus_rel"] <- "rho_rel"
   out
 }

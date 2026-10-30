@@ -59,14 +59,12 @@ and per-subject \eqn{\omega = \omega^{+}/(1+\omega^{+})} is returned for
 comparison with observed values.
 }
 \examples{
-\donttest{
 data(hn)
 Ind <- data.frame(event = as.integer(hn$status == 1),
                   competing = as.integer(hn$status == 2))
 Cov <- hn[, c("age", "smoker", "t_cat", "n_cat", "p16")]
 fit <- gcecox(hn$time, Ind, Cov, M = 5, t = 5)
 summary(fit)
-}
 }
 \seealso{
 \code{\link{gcefg}}, \code{\link{lunnmcneil}}, \code{\link{gce_cutpoints}}

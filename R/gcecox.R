@@ -35,14 +35,12 @@
 #'   (ggplot objects), and the fitted Lunn-McNeil model.
 #'
 #' @examples
-#' \donttest{
 #' data(hn)
 #' Ind <- data.frame(event = as.integer(hn$status == 1),
 #'                   competing = as.integer(hn$status == 2))
 #' Cov <- hn[, c("age", "smoker", "t_cat", "n_cat", "p16")]
 #' fit <- gcecox(hn$time, Ind, Cov, M = 5, t = 5)
 #' summary(fit)
-#' }
 #' @seealso \code{\link{gcefg}}, \code{\link{lunnmcneil}}, \code{\link{gce_cutpoints}}
 #' @export
 gcecox <- function(Time, Ind, Cov, M = 5, t,
@@ -72,7 +70,7 @@ gcecox <- function(Time, Ind, Cov, M = 5, t,
   ## Uses the RAW coefficients on mean-centered covariates, equivalently the
   ## per-SD coefficients on standardized covariates. Independent of the reported
   ## coefficient scale, and centered so the average patient has riskscore = 0.
-  Xd <- stats::model.matrix(stats::reformulate(names(Cov)), data = Cov)
+  Xd <- stats::model.matrix(~ ., data = Cov)   # '~ .' tolerates non-syntactic names
   Xd <- Xd[, colnames(Xd) != "(Intercept)", drop = FALSE]
   Xd <- Xd[, cn, drop = FALSE]
   ctr <- lm.fit$center[cn]; sds <- lm.fit$scale[cn]

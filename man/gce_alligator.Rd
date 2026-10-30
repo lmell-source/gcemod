@@ -17,8 +17,8 @@ gce_alligator(
 )
 }
 \arguments{
-\item{object}{a \code{"gcemod"} object from \code{\link{gcecox}} or
-\code{\link{gcefg}}.}
+\item{object}{a \code{"gcemod"} object from \code{\link{gcecox}},
+\code{\link{gcefg}}, or \code{\link{gcecif}}.}
 
 \item{groups}{a \code{\link{gce_cutpoints}} result, a grouping factor of
 length n, or a single integer giving the number of risk groups
@@ -53,7 +53,7 @@ A \code{ggplot}/\code{patchwork} object. The Gray's-test result, the
 \description{
 Plots the cause-specific cumulative incidence functions (CIFs) of the event
 of interest and the competing event over time on a single panel, with risk
-groups distinguished by colour and event types by line type (event of
+groups distinguished by color and event types by line type (event of
 interest solid, competing event dashed). In higher-risk groups the
 event-of-interest CIF rises above the competing-event CIF and the curves
 separate like an alligator's open jaws.
@@ -66,11 +66,9 @@ capped at 25\%). Numbers at risk for each group are shown in an aligned panel
 below the plot. Gray's test across groups is attached.
 }
 \examples{
-\donttest{
 data(hn)
 Ind <- data.frame(event = as.integer(hn$status == 1),
                   competing = as.integer(hn$status == 2))
 fit <- gcecox(hn$time, Ind, hn[, c("age", "t_cat", "p16")], M = 5, t = 5)
 gce_alligator(fit, groups = 2)
-}
 }

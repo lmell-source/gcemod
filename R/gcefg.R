@@ -36,22 +36,29 @@
 #'   per 1 SD). The risk score is always the normalized (mean-centered) linear
 #'   predictor. Covariate means/SDs are in \code{$scaling}
 #'   (see \code{\link{gce_scaling}}).
+#' @param se standard-error method passed to \code{\link{lunnmcneil}}:
+#'   \code{"robust"} (default; cluster-robust on subject, censoring weights
+#'   treated as fixed, which errs on the conservative side) or \code{"boot"}
+#'   (subject bootstrap that re-estimates the censoring weights within each
+#'   resample, so the variance additionally accounts for their estimation, at
+#'   higher computational cost).
+#' @param B number of bootstrap resamples when \code{se = "boot"} (default
+#'   \code{200}).
 #'
 #' @return An object of class \code{"gcemod"} (subclass \code{"gcefg"}) with the
 #'   same components as \code{\link{gcecox}} on the subdistribution scale.
 #'
 #' @examples
-#' \donttest{
 #' data(hn)
 #' Ind <- data.frame(event = as.integer(hn$status == 1),
 #'                   competing = as.integer(hn$status == 2))
 #' Cov <- hn[, c("age", "smoker", "t_cat", "n_cat", "p16")]
 #' fit <- gcefg(hn$time, Ind, Cov, M = 5, t = 5)
 #' summary(fit)
-#' }
 #' @seealso \code{\link{gcecox}}, \code{\link{lunnmcneil}}
 #' @export
-gcefg <- function(Time, Ind, Cov, M = 5, t, conf.level = 0.95, standardize = FALSE) {
+gcefg <- function(Time, Ind, Cov, M = 5, t, conf.level = 0.95, standardize = FALSE,
+                  se = c("robust", "boot"), B = 200) {
   cl <- match.call()
   chk <- .gce_check(Time, Ind, Cov, M, t)
   Time <- chk$Time; Ind <- chk$Ind; Cov <- chk$Cov
@@ -66,13 +73,13 @@ gcefg <- function(Time, Ind, Cov, M = 5, t, conf.level = 0.95, standardize = FAL
   ## ---- omega+ via Lunn-McNeil (subdistribution / Fine-Gray) ----
   lm.fit <- lunnmcneil(Time, cause, Cov, event = 1, competing = 2,
                        type = "finegray", conf.level = conf.level,
-                       standardize = standardize)
+                       standardize = standardize, se = se, B = B)
   coefop <- lm.fit$omegaplus$log_ratio
   names(coefop) <- lm.fit$omegaplus$term
   cn <- names(coefop)
 
   ## ---- design matrix and normalized risk score (always mean-centered) ----
-  Xd <- stats::model.matrix(stats::reformulate(names(Cov)), data = Cov)
+  Xd <- stats::model.matrix(~ ., data = Cov)   # '~ .' tolerates non-syntactic names
   Xd <- Xd[, colnames(Xd) != "(Intercept)", drop = FALSE]
   Xd <- Xd[, cn, drop = FALSE]
   ctr <- lm.fit$center[cn]; sds <- lm.fit$scale[cn]

@@ -63,3 +63,23 @@ test_that("gce_tidy(effects = TRUE) returns a primary/competing/total/relative t
   expect_true(all(grepl("^[0-9.]+ \\([0-9.]+, [0-9.]+\\)$", eff$primary)))
   expect_identical(eff$term, fit$covnames)
 })
+
+test_that("non-syntactic covariate names are handled end to end", {
+  d <- make_test_data()
+  Cov <- d$Cov
+  names(Cov)[names(Cov) == "age"] <- "age at dx"   # space => non-syntactic name
+  Ind <- data.frame(d$CA, d$CM)
+
+  fit <- gcecox(d$Time, Ind, Cov, M = 4, t = 5)     # must not error
+  expect_s3_class(fit, "gcemod")
+  expect_length(fit$coef, ncol(Cov))
+
+  # the Lunn-McNeil engine agrees regardless of the odd name
+  lmfit <- lunnmcneil(d$Time, d$cause, Cov, type = "coxph")
+  expect_equal(unname(fit$coef), lmfit$omegaplus$log_ratio, tolerance = 1e-6)
+
+  # scoring new data carrying the same odd name works
+  rs <- gce_riskscore(fit, newdata = Cov[1:5, , drop = FALSE])
+  expect_equal(nrow(rs), 5L)
+  expect_true(all(is.finite(rs$riskscore)))
+})

@@ -13,11 +13,13 @@ gce_performance(object, conf.level = 0.95)
 \code{0.95}).}
 }
 \value{
-Invisibly, a named numeric vector \code{cindex} (estimate, se, lower,
-  upper). The value is also printed.
+An object of class \code{"gce_performance"}: a named numeric vector
+  with elements \code{estimate}, \code{se}, \code{lower}, and \code{upper},
+  carrying attributes \code{conf.level} and \code{flipped}. Printing the
+  object displays the C-index with its confidence interval.
 }
 \description{
-Reports the cause-specific concordance (C-index) of the GCE risk score for
+Computes the cause-specific concordance (C-index) of the GCE risk score for
 the event of interest. For calibration (predicted vs. observed
 \eqn{\omega^{+}}), see \code{\link{gce_calibration}}.
 }
@@ -25,16 +27,16 @@ the event of interest. For calibration (predicted vs. observed
 The C-index is computed with \code{\link[survival]{concordance}} using the
 event of interest as the outcome and the GCE risk score as the predictor.
 Higher risk scores denote higher risk; the statistic is oriented so that
-values above 0.5 indicate discrimination in the expected direction.
+values above 0.5 indicate discrimination in the expected direction, and the
+\code{"flipped"} attribute of the result records whether the orientation was
+reversed.
 }
 \examples{
-\donttest{
 data(hn)
 Ind <- data.frame(event = as.integer(hn$status == 1),
                   competing = as.integer(hn$status == 2))
 fit <- gcecox(hn$time, Ind, hn[, c("age", "t_cat", "p16")], M = 5, t = 5)
 gce_performance(fit)
-}
 }
 \seealso{
 \code{\link{gce_calibration}}

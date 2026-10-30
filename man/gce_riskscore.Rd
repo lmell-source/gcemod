@@ -7,16 +7,18 @@
 gce_riskscore(object, newdata)
 }
 \arguments{
-\item{object}{a \code{"gcemod"} object.}
+\item{object}{a \code{"gcemod"} object from \code{\link{gcecox}},
+\code{\link{gcefg}}, or \code{\link{gcecif}}.}
 
 \item{newdata}{a data frame containing the covariates used to fit
 \code{object} (same column names). Factor levels not seen in the fitting
 data are treated as the reference level.}
 }
 \value{
-A data frame with \code{riskscore}, \code{omegaplus_rel}
-  (= \code{exp(riskscore)}), and, for cause-specific models, \code{omegaplus}
-  and \code{omega} (absolute, at time \code{t}).
+A data frame with \code{riskscore} and \code{exp(riskscore)} relative
+  to the average subject: \code{omegaplus_rel} for omega+ models (with
+  absolute \code{omegaplus} and \code{omega} at time \code{t} for
+  cause-specific fits), or \code{rho_rel} for a \code{\link{gcecif}} fit.
 }
 \description{
 Computes the GCE risk score for new subjects using the covariate means/SDs
@@ -28,12 +30,10 @@ omega+ relative to the \emph{average} subject in the fitting data (a value of
 model's time \code{t} are also returned.
 }
 \examples{
-\donttest{
 data(prostate)
 Ind <- data.frame(as.integer(prostate$status == 1), as.integer(prostate$status == 2))
 fit <- gcecox(prostate$time, Ind, prostate[, c("age", "psa", "gleason")], M = 5, t = 10)
 gce_riskscore(fit, newdata = prostate[1:5, ])
-}
 }
 \seealso{
 \code{\link{gce_scaling}}

@@ -7,13 +7,14 @@
 gce_scaling(object)
 }
 \arguments{
-\item{object}{a \code{"gcemod"} object from \code{\link{gcecox}} or
-\code{\link{gcefg}}.}
+\item{object}{a \code{"gcemod"} object from \code{\link{gcecox}},
+\code{\link{gcefg}}, or \code{\link{gcecif}}.}
 }
 \value{
 A data frame with columns \code{term}, \code{mean}, \code{sd},
-  \code{coef_perSD} (log-omega+ ratio per 1 SD) and
-  \code{omegaplus_ratio_perSD}.
+  \code{coef_perSD} (log ratio per 1 SD) and the per-SD ratio
+  (\code{omegaplus_ratio_perSD} for omega+ models,
+  \code{rho_ratio_perSD} for a \code{\link{gcecif}} fit).
 }
 \description{
 Returns each covariate's mean and standard deviation (from the data used to
@@ -23,12 +24,10 @@ for new subjects (see \code{\link{gce_riskscore}}) and to interpret how far a
 subject sits from the average patient.
 }
 \examples{
-\donttest{
 data(prostate)
 Ind <- data.frame(as.integer(prostate$status == 1), as.integer(prostate$status == 2))
 fit <- gcecox(prostate$time, Ind, prostate[, c("age", "psa", "gleason")], M = 5, t = 10)
 gce_scaling(fit)
-}
 }
 \seealso{
 \code{\link{gce_riskscore}}

@@ -81,7 +81,7 @@ cuts$cutpoints
 
 ### 4. Alligator plot (cumulative incidence by risk group)
 
-Risk groups are distinguished by colour and event types by line type (event of
+Risk groups are distinguished by color and event types by line type (event of
 interest solid, competing event dashed) on a single panel.
 
 ```{r alligator, fig.height=4}

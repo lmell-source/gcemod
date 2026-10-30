@@ -7,8 +7,10 @@
 gce_tidy(object, effects = FALSE, ...)
 }
 \arguments{
-\item{object}{a \code{"gcemod"} object from \code{\link{gcecox}} or
-\code{\link{gcefg}}.}
+\item{object}{a \code{"gcemod"} object from \code{\link{gcecox}},
+\code{\link{gcefg}}, or \code{\link{gcecif}}. For a \code{\link{gcecif}} fit
+the \code{relative} column is the cumulative-incidence ratio (rho ratio) and
+the primary/competing/total columns are cause-specific hazard ratios.}
 
 \item{effects}{logical; if \code{TRUE}, return the primary/competing/total/
 relative effects comparison table instead of the omega+ ratio table.
@@ -43,12 +45,10 @@ cause-specific hazards coincide and a Cox model on the composite endpoint is
 used in both cases.
 }
 \examples{
-\donttest{
 data(hn)
 Ind <- data.frame(event = as.integer(hn$status == 1),
                   competing = as.integer(hn$status == 2))
 fit <- gcecox(hn$time, Ind, hn[, c("age", "t_cat", "p16")], M = 5, t = 5)
 gce_tidy(fit)
 gce_tidy(fit, effects = TRUE)
-}
 }
