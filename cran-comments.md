@@ -1,39 +1,38 @@
-## Submission
+## Update
 
-This is the first CRAN submission of gcemod (0.3.0).
+This update (0.3.1) replaces the estimator behind gcecif(). The previous version regressed jackknife
+pseudo-values of the nonlinear ratio. The new estimator is a stacked pseudo-observation
+regression whose estimating function is linear in per-cause, mean-type
+jackknife pseudo-observations (log link, event-type interactions, subject-
+clustered sandwich variance), for which conditional unbiasedness is covered by
+established pseudo-observation theory. The `method` and `ridge` arguments of
+gcecif() are removed.
 
-gcemod fits generalized competing event (GCE) models and estimates covariate
-effects on omega-plus (the ratio of the hazard for an event of interest to the
-hazard for a competing event) on the cause-specific (Cox) and subdistribution
-(Fine-Gray) scales, with inference from the Lunn-McNeil (1995) stacked-data
-approach.
+We are submitting this update promptly after 0.3.0 because the change
+corrects the gcecif() estimator's statistical properties, which we preferred
+to fix before the package accrues users.
 
-It is a rewritten and re-scoped successor to the maintainer's existing CRAN
-package 'gcerisk': it models omega-plus only, adds a Lunn-McNeil-style estimator
-on the subdistribution scale, and adds risk-score cutpoints, cumulative-incidence
-("alligator") plots, calibration plots, and a covariate-effects comparison table
-(`gce_tidy(effects = TRUE)`). It is intended as a separate package, not a
-replacement for 'gcerisk'.
+Two further additions: gcefg() and lunnmcneil(type = "finegray") gain an
+optional subject-bootstrap variance (se = "boot") that accounts for
+estimation of the censoring weights, and a new diagnostic plot function,
+gce_omegatime(), displays a chosen GCE contrast over follow-up as a visual
+check of the proportional relative-hazards assumption. No other
+user-visible interfaces change.
 
-A previous auto-pretest of this version flagged a stray `.github` directory
-(an R-hub CI workflow) that was inadvertently included; it is now excluded via
-`.Rbuildignore`.
+Morten Overgaard is credited as a package contributor.
 
 ## Test environments
 
-* local: <your OS>, R <your version>
-* win-builder: R-devel and R-release (devtools::check_win_devel(), check_win_release())
-* macOS builder: R-release (devtools::check_mac_release())
+* local: macOS (x86_64-apple-darwin20), R 4.4.0
+* win-builder: R-release and R-devel
 
 ## R CMD check results
 
 0 errors | 0 warnings | 1 note
 
-The note is the expected "New submission" note, together with "possibly
-misspelled words in DESCRIPTION". Those words are surnames (Carmona, Lunn,
-McNeil, Mell), the acronym GCE, "et" and "al" from "et al.", and the
-competing-risks technical term "subdistribution"; all are intentional and
-spelled correctly.
+The single NOTE on the local check ("checking for future file timestamps:
+unable to verify current time") reflects the unavailability of the external
+time-verification service and is unrelated to the package.
 
 ## Reverse dependencies
 

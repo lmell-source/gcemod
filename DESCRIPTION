@@ -1,12 +1,14 @@
 Package: gcemod
 Type: Package
 Title: Generalized Competing Event Models with Lunn-McNeil Testing
-Version: 0.3.0
-Date: 2026-08-06
+Version: 0.3.1
+Date: 2026-10-28
 Authors@R:
-    person("Loren", "Mell", email = "lmell@ucsd.edu", role = c("aut", "cre"))
-Description: Tools for fitting generalized competing event (GCE) models and
-    estimating covariate effects on omega-plus, the ratio of the hazard for an
+    c(person("Loren", "Mell", email = "lmell@ucsd.edu", role = c("aut", "cre")),
+      person("Morten", "Overgaard", email = "moov@ph.au.dk", role = "ctb",
+             comment = "proposed the stacked pseudo-observation estimator used by gcecif()"))
+Description: Fits generalized competing event (GCE) models and estimates
+    covariate effects on omega-plus, the ratio of the hazard for an
     event of interest to the hazard for a competing event, on both the
     cause-specific (Cox) and subdistribution (Fine-Gray) hazard scales.
     Confidence intervals and p-values are obtained from the Lunn-McNeil (1995)
@@ -14,12 +16,16 @@ Description: Tools for fitting generalized competing event (GCE) models and
     the model linear predictor, identifies risk-score cutpoints that maximize
     the separation in omega-plus between groups, and produces cumulative
     incidence ("alligator") plots by risk group and calibration plots of
-    predicted versus observed omega-plus. Methods follow Carmona et al. (2014)
+    predicted versus observed omega-plus. It also compares covariate effects
+    across the primary, competing, and total (composite) events, and estimates
+    covariate effects on the ratio of cumulative incidence functions (a
+    cumulative-incidence-scale GCE model). Methods follow Carmona et al. (2014)
     <doi:10.1016/j.ijrobp.2014.03.047>, Mell et al. (2024)
     <doi:10.1016/j.eururo.2023.01.020>, and Lunn and McNeil (1995)
     <doi:10.2307/2532940>.
 License: GPL (>= 2)
 Encoding: UTF-8
+Language: en-US
 LazyData: true
 Depends:
     R (>= 3.5.0)

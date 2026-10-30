@@ -17,6 +17,16 @@ intervals and p-values from the Lunn-McNeil stacked-data approach.
    competing event within risk groups (`gce_alligator()`).
 5. **Calibration plots** --- predicted vs. observed omega+ by rank, with a
    user-specified number of groups (`gce_calibration()`).
+6. **Compare effects across events** --- primary, competing, total (composite),
+   and relative (omega+) hazard ratios in one table
+   (`gce_tidy(fit, effects = TRUE)`).
+7. **Score new subjects** relative to the average subject, and expose the
+   covariate means/SDs behind the risk score (`gce_riskscore()`, `gce_scaling()`).
+8. **Cumulative-incidence-ratio GCE model** --- covariate effects on
+   rho(t) = F1(t)/F2(t), the odds that a realized event is the event of interest,
+   by pseudo-observation regression (`gcecif()`). Returns a `gcemod` object, so it
+   works with `gce_tidy()`, `gce_scaling()`, and `gce_riskscore()` like the
+   `gcecox()` / `gcefg()` fits.
 
 Per-subject omega = omega+/(1+omega+) is kept as a descriptive quantity
 (`$omega`) so model-predicted values can be compared with observed ones.
@@ -25,11 +35,10 @@ Discrimination is available via `gce_performance()` (cause-specific C-index).
 ## Install and check (from source)
 
 ```r
-# one time: create the demo dataset
+# one time: build the bundled example datasets
 source("data-raw/make_sample.R")      # writes data/hn.rda and data/prostate.rda
 
-# regenerate man/ and NAMESPACE from the roxygen headers (REQUIRED for this
-# release: the shipped source has no man/ directory)
+# regenerate man/ and NAMESPACE from the roxygen headers
 devtools::document()
 
 devtools::check()
@@ -44,9 +53,13 @@ Ind <- data.frame(event     = as.integer(hn$status == 1),
                   competing = as.integer(hn$status == 2))
 Cov <- hn[, c("age", "smoker", "t_cat", "n_cat", "p16")]
 
-fit  <- gcecox(hn$time, Ind, Cov, M = 5, t = 5)   # or gcefg(...)
+fit  <- gcecox(hn$time, Ind, Cov, M = 5, t = 5)   # or gcefg(...) / gcecif(...)
 summary(fit)
 
+cif  <- gcecif(hn$time, Ind, Cov, t = 5)   # cumulative-incidence-ratio scale
+gce_tidy(cif)                              # same tidy interface as gcecox/gcefg
+
+gce_tidy(fit, effects = TRUE)   # primary / competing / total / relative HRs
 cuts <- gce_cutpoints(fit, groups = 3, method = "optimal")
 gce_alligator(fit, groups = cuts)
 gce_calibration(fit, which = "omegaplus", groups = 5)

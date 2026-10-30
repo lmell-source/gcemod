@@ -1,3 +1,53 @@
+# gcemod 0.3.1
+
+* **`gcecif()` estimator replaced.** The cumulative-incidence-ratio model is
+  estimated by a *stacked pseudo-observation regression*, wherein 
+  each subject contributes one jackknife pseudo-observation
+  for each of `F1(t)` and `F2(t)` --- mean-type functionals of the
+  Aalen-Johansen estimator, for which conditional unbiasedness of the
+  pseudo-observations is established --- and a single log-link GEE is fit to
+  the stacked pairs with an event-type indicator. The main effects model
+  `log F2(t | z)`; the event-type interactions estimate `log rho(t | z)`
+  directly; the variance is cluster-robust on subject, capturing the
+  dependence between a subject's two pseudo-observations induced by the shared
+  all-cause survivor. This is the cumulative-incidence-scale analogue of the
+  stacked Lunn-McNeil construction used by `gcecox()` and `gcefg()`.
+
+  The previous estimator regressed jackknife pseudo-values of the nonlinear
+  ratio itself, so estimates could be biased for large covariate effects. The
+  `method` and `ridge` arguments are removed; `$pseudo` is now a two-column
+  data frame of per-cause pseudo-observations, and `$coef_f2` and
+  `$converged` are added. The interface, risk score, and downstream tooling
+  (`gce_cutpoints()`, `gce_alligator()`, `gce_calibration()`,
+  `gce_riskscore()`, `gce_tidy()`) are unchanged.
+
+* **New `gce_omegatime()` PRH diagnostic plot.** Plots a nonparametric
+  estimate of a chosen GCE contrast over follow-up, for the whole sample or
+  within risk groups (`groups`, resolved as in `gce_cutpoints()`). The `which`
+  argument selects the contrast: `"omega"` (default; the Nelson-Aalen
+  cumulative hazard share Lambda1/(Lambda1+Lambda2)), `"omegaplus"`
+  (Lambda1/Lambda2, log scale), `"omegatilde"` / `"omegatildeplus"` (the
+  subdistribution analogues built from -log(1 - Fk) with Aalen-Johansen
+  CIFs), `"rho"` (F1/F2, log scale), or `"pi"` (F1/(F1+F2), the bounded share
+  form of rho, so logit(pi) = log(rho)). Under a time-constant cause-specific
+  relative hazard the omega, omega+, rho, and pi displays are exactly flat, so a
+  flat curve is a direct visual check of the proportional relative-hazards
+  assumption --- and drift shows the time range over which it is
+  approximately valid; with groups, parallel curves on a log scale indicate
+  a time-constant group contrast. `xmax` truncates the display to avoid
+  over-reading the sparse late-follow-up tail. Successor to the
+  omega-versus-time display in `gcerisk`.
+
+* **Bootstrap variance option for the subdistribution scale.** `gcefg()` and
+  `lunnmcneil(type = "finegray")` gain `se = c("robust", "boot")` and `B`.
+  The default cluster-robust variance treats the IPCW censoring weights as
+  fixed, which errs on the conservative side; `se = "boot"` performs a
+  subject bootstrap that re-estimates the weights within each resample, so
+  the variance fully accounts for their estimation.
+
+* Morten Overgaard, who proposed the corrected gcecif() estimator, is
+  credited as a package contributor.
+
 # gcemod 0.3.0
 
 First CRAN release.
@@ -12,6 +62,17 @@ First CRAN release.
   reader can see whether a covariate acts on the event of interest, the competing
   event, both, or their balance. `gcecox()` and `gcefg()` retain the model design
   matrix on the fitted object (`$design`) to support this.
+* **`gcecif()` cumulative-incidence-ratio GCE model.** A third GCE estimator
+  alongside `gcecox()` and `gcefg()`, on the cumulative-incidence scale:
+  covariate effects on the ratio of cumulative incidences rho(t) = F1(t)/F2(t)
+  at a landmark time `t` --- the odds that a subject's realized event by time t
+  is the event of interest, a cumulative-incidence-scale analogue of omega+. Uses
+  jackknife pseudo-observation regression of the Aalen-Johansen estimator with a
+  robust variance; `method = "logit"` (default) fits the bounded share via a
+  logit-link GEE, `method = "logratio"` fits log(F1/F2) via an identity-link GEE.
+  Returns a `gcemod` object, so it works with `gce_tidy()`, `gce_scaling()`, and
+  `gce_riskscore()` like the other fits. The full methodological development is
+  described in a companion manuscript (in preparation).
 * **Reported coefficients on the natural scale by default; risk score always
   normalized.** `gcecox()`, `gcefg()`, and `lunnmcneil()` report omega+ ratios
   per natural covariate unit by default; `standardize = TRUE` reports them per
@@ -42,7 +103,7 @@ First CRAN release.
   (`$p.perm`, via `nperm > 0`).
 * **Alligator plot (`gce_alligator()`).** Draws the cumulative incidence of the
   event of interest and the competing event on a single panel, with risk groups
-  distinguished by colour and event types by line type (event of interest solid,
+  distinguished by color and event types by line type (event of interest solid,
   competing event dashed). By default it forms 2 groups at the optimal omega+
   cutpoint (`method = "optimal"`, log-scale; `criterion` selectable) and
   annotates the cutpoint value and group sizes. The x-axis is truncated at the
@@ -50,7 +111,7 @@ First CRAN release.
   25/50/75/100% covering the peak incidence, with 5%/10% ticks (override with
   `ymax`), so low-incidence plots are not compressed; and numbers at risk are
   shown in an aligned panel below the plot (via `patchwork`). Groups of 2-3 are
-  labelled Low/High or Low/Intermediate/High by default.
+  labeled Low/High or Low/Intermediate/High by default.
 * **Two bundled example datasets (`hn`, `prostate`).** Two competing-risks
   example datasets show opposite GCE regimes: `hn` (head and neck, n = 1000) is
   recurrence-dominant (omega+ > 1), while `prostate` (n = 1000) is
@@ -67,7 +128,7 @@ Refocused the package on modeling omega+ (event of interest vs. competing event)
 ## Breaking changes
 
 * **Removed the omega-ratio regression.** Covariate effects on omega (event of
-  interest vs. all events) are no longer modelled.
+  interest vs. all events) are no longer modeled.
 * Per-subject omega = omega+/(1+omega+) is **kept** as a descriptive quantity
   (`$omega`) for comparing model-predicted with observed values.
 * `gce_tidy()` no longer takes `which` (omega+ only). `gce_cutpoints()` now

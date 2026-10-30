@@ -22,10 +22,10 @@ source("data-raw/make_sample.R")     # writes data/hn.rda and data/prostate.rda
 This must be done before `check()` because the help examples and the `LazyData`
 field expect the `hn` and `prostate` datasets to exist.
 
-## 2. Regenerate docs and NAMESPACE from the roxygen headers (REQUIRED)
+## 2. Regenerate docs and NAMESPACE from the roxygen headers (recommended)
 
-This release ships **no `man/` directory** --- the help files are generated from
-the roxygen headers. You must run this before `check()`:
+The help files are generated from the roxygen headers. Running `document()` keeps
+`man/*.Rd` and `NAMESPACE` in sync with the source before `check()`:
 
 ```r
 devtools::document()     # or roxygen2::roxygenise()
@@ -41,7 +41,7 @@ stale-doc mismatch.
 devtools::check()        # R CMD check --as-cran equivalent
 # or, from a shell:
 #   R CMD build gcemod
-#   R CMD check gcemod_0.1.0.tar.gz --as-cran
+#   R CMD check gcemod_0.3.0.tar.gz --as-cran
 ```
 
 ## 4. Run tests only (fast)
